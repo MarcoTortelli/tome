@@ -1,35 +1,42 @@
-import prisma from '../prisma/client';
+import { AppError } from "../errors/app.error";
+import prisma from "../prisma/client";
 
 interface UserData {
-	name: string;
-	email: string;
-	password: string;
+  name: string;
+  email: string;
+  password: string;
 }
 
 const createUser = async (data: UserData) => {
-	return prisma.user.create({ data });
+  return prisma.user.create({ data });
 };
 
 const getUsers = async () => {
-	return prisma.user.findMany();
+  return prisma.user.findMany();
 };
 
 const getUserById = async (id: number) => {
-	return prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+  return user;
 };
 
 const updateUser = async (id: number, data: UserData) => {
-	return prisma.user.update({ where: { id }, data });
+  await getUserById(id);
+  return prisma.user.update({ where: { id }, data });
 };
 
 const deleteUser = async (id: number) => {
-	return prisma.user.delete({ where: { id } });
+  await getUserById(id);
+  return prisma.user.delete({ where: { id } });
 };
 
 export default {
-	createUser,
-	getUsers,
-	getUserById,
-	updateUser,
-	deleteUser,
+  createUser,
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
 };
