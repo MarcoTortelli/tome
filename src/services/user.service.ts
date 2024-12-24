@@ -1,14 +1,18 @@
 import { AppError } from "../errors/app.error";
 import prisma from "../prisma/client";
+import { z } from "zod";
 
-interface UserData {
-  name: string;
-  email: string;
-  password: string;
-}
+const UserSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
-const createUser = async (data: UserData) => {
-  return prisma.user.create({ data });
+type User = z.infer<typeof UserSchema>;
+
+const createUser = async (data: User) => {
+  const parsedData = UserSchema.parse(data);
+  return prisma.user.create({ data: parsedData });
 };
 
 const getUsers = async () => {
@@ -23,9 +27,10 @@ const getUserById = async (id: number) => {
   return user;
 };
 
-const updateUser = async (id: number, data: UserData) => {
+const updateUser = async (id: number, data: User) => {
   await getUserById(id);
-  return prisma.user.update({ where: { id }, data });
+  const parsedData = UserSchema.partial().parse(data);
+  return prisma.user.update({ where: { id }, data: parsedData });
 };
 
 const deleteUser = async (id: number) => {
