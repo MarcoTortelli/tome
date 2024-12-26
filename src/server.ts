@@ -1,9 +1,12 @@
-import app from './app';
+import dotenv from "dotenv";
+import app from "./app";
+import { getEnv } from "./utils/env";
+dotenv.config();
 
-const port = process.env.PORT || 3000;
+const port = getEnv("PORT");
 
 const server = app.listen(port, () => {
-	console.log(`vai tomando na ${port}`);
+  console.log(`vai tomando na ${port}`);
 });
 
 export default server;
